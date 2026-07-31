@@ -649,6 +649,7 @@ This notebook demonstrates:
 3. Dan Hendrycks and Kevin Gimpel. *Gaussian Error Linear Units (GELUs).* 2016.
 4. PyTorch documentation.
 5. TorchVision MNIST documentation.
+6. https://www.learnpytorch.io/08_pytorch_paper_replicating/
 
 ---
 
