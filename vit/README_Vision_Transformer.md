@@ -227,8 +227,8 @@ PE(pos,2i+1)=\cos\left(\frac{pos}{10000^{2i/D}}\right)
 ```math
 \mathbf{z}'_{\ell}
 =
-\operatorname{MSA}\!\left(
-\operatorname{LN}(\mathbf{z}_{\ell-1})
+\mathrm{MSA}\!\left(
+\mathrm{LN}(\mathbf{z}_{\ell-1})
 \right)
 +
 \mathbf{z}_{\ell-1},
@@ -276,9 +276,9 @@ The learnable matrices `W_Q`, `W_K`, and `W_V` allow the model to create differe
 <summary><strong>Scaled dot-product attention</strong></summary>
 
 ```math
-\operatorname{Attention}(\mathbf{Q},\mathbf{K},\mathbf{V})
+\mathrm{Attention}(\mathbf{Q},\mathbf{K},\mathbf{V})
 =
-\operatorname{Softmax}\!\left(
+\mathrm{Softmax}\!\left(
 \frac{\mathbf{Q}\mathbf{K}^{\mathsf{T}}}{\sqrt{d_h}}
 \right)\mathbf{V}
 ```
@@ -350,13 +350,13 @@ so the attention output returns to:
 ### Multi-head attention equation
 
 ```math
-\operatorname{MSA}(\mathbf{X})
+\mathrm{MSA}(\mathbf{X})
 =
-\operatorname{Concat}
+\mathrm{Concat}
 \left(
-\operatorname{head}_1,
+\mathrm{head}_1,
 \ldots,
-\operatorname{head}_h
+\mathrm{head}_h
 \right)
 \mathbf{W}_O
 ```
@@ -370,8 +370,8 @@ Each head can learn a different relationship among the class token and image-pat
 ```math
 \mathbf{z}_{\ell}
 =
-\operatorname{MLP}\!\left(
-\operatorname{LN}(\mathbf{z}'_{\ell})
+\mathrm{MLP}\!\left(
+\mathrm{LN}(\mathbf{z}'_{\ell})
 \right)
 +
 \mathbf{z}'_{\ell},
@@ -401,10 +401,10 @@ x = x + self.mlp(self.norm2(x))
 ### Two-layer MLP with GELU
 
 ```math
-\operatorname{MLP}(\mathbf{x})
+\mathrm{MLP}(\mathbf{x})
 =
 \mathbf{W}_2\,
-\operatorname{GELU}\!\left(
+\mathrm{GELU}\!\left(
 \mathbf{W}_1\mathbf{x}+\mathbf{b}_1
 \right)
 +
@@ -433,13 +433,13 @@ The dimensional flow is:
 <summary><strong>GELU definition</strong></summary>
 
 ```math
-\operatorname{GELU}(x)=x\Phi(x)
+\mathrm{GELU}(x)=x\Phi(x)
 ```
 
 A commonly used approximation is:
 
 ```math
-\operatorname{GELU}(x)
+\mathrm{GELU}(x)
 \approx
 \frac{x}{2}
 \left[
@@ -460,7 +460,7 @@ GELU smoothly weights the input rather than setting every negative value exactly
 ## Equation 4: Final Image Representation
 
 ```math
-\mathbf{y}=\operatorname{LN}(\mathbf{z}_L^0)
+\mathbf{y}=\mathrm{LN}(\mathbf{z}_L^0)
 ```
 
 After the final encoder layer, the sequence is:
