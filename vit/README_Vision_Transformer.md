@@ -103,7 +103,6 @@ The original `1 × 28 × 28` grayscale images are resized to `1 × 32 × 32` so 
 
 # ViT Paper Equations Mapped to Code
 
-GitHub renders the equations below using fenced `math` blocks. This is more reliable in README files than `\[ ... \]` or numbered `\tag{}` expressions.
 
 ## Equation 1: Transformer Input
 
