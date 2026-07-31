@@ -655,4 +655,4 @@ This notebook demonstrates:
 
 ## License
 
-This implementation is intended for educational and research use. Add the license appropriate for your repository, such as MIT or Apache 2.0.
+MIT
