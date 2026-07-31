@@ -1,108 +1,79 @@
 # Vision Transformer (ViT) From Scratch in PyTorch
 
-## Overview
+An educational implementation of a **Vision Transformer (ViT)** built from scratch in PyTorch and trained on the **MNIST handwritten-digit dataset**.
 
-This project implements a **Vision Transformer (ViT)** from scratch using **PyTorch** and trains it on the **MNIST handwritten digit dataset**.
+The notebook connects the mathematical formulation in the original ViT paper to the corresponding PyTorch implementation, including patch embedding, positional information, multi-head self-attention, the GELU MLP, residual connections, and classification using the final class token.
 
-Vision Transformers process images as sequences of image patches. Each patch is converted into a learnable embedding vector, positional information is added, and the resulting token sequence is passed through multiple Transformer encoder blocks.
-
-The notebook demonstrates:
-
-- image patch extraction;
-- learnable patch projection;
-- learnable class token;
-- positional encoding;
-- multi-head self-attention;
-- Transformer encoder blocks;
-- MLP with GELU activation;
-- residual connections;
-- layer normalization;
-- image classification using the final class token.
-
-The implementation follows the architecture introduced in:
-
-> Dosovitskiy et al., *An Image is Worth 16×16 Words: Transformers for Image Recognition at Scale*, ICLR 2021.
-
----
-
-## Project Files
+## Notebook
 
 ```text
 vision_transformer_from_scratch_mnist.ipynb
-README.md
-data/
 ```
 
-The `data/` directory is created automatically when MNIST is downloaded.
+## Main Components
+
+- Conv2D-based patch extraction and projection
+- Learnable class token
+- Positional encoding
+- Four-head multi-head self-attention
+- Pre-normalization Transformer encoder blocks
+- Two-layer MLP with GELU
+- Residual connections and dropout
+- Final class-token classification head
 
 ---
 
-## Architecture Overview
+## Architecture
 
 ```text
-Input Image
-    │
-    ▼
-Resize to 32 × 32
-    │
-    ▼
-Patch Embedding using Conv2D
-    │
-    ▼
-Sequence of Patch Tokens
-    │
-    ▼
-Prepend Learnable Class Token
-    │
-    ▼
-Add Positional Encoding
-    │
-    ▼
-Transformer Encoder Block × L
-    │
-    ├── Layer Normalization
-    ├── Multi-Head Self-Attention
-    ├── Residual Connection
-    ├── Layer Normalization
-    ├── Two-Layer MLP with GELU
-    └── Residual Connection
-    │
-    ▼
-Final Layer Normalization
-    │
-    ▼
-Select Class Token
-    │
-    ▼
-Linear Classification Head
-    │
-    ▼
-Predicted Digit Class
+Input image: [B, 1, 32, 32]
+          │
+          ▼
+Conv2D patch embedding
+kernel = 8, stride = 8
+          │
+          ▼
+Patch tokens: [B, 16, 96]
+          │
+          ▼
+Prepend learnable [CLS] token
+          │
+          ▼
+Token sequence: [B, 17, 96]
+          │
+          ▼
+Add positional encoding
+          │
+          ▼
+Transformer encoder × 4
+  ├─ LayerNorm
+  ├─ 4-head self-attention
+  ├─ Residual connection
+  ├─ LayerNorm
+  ├─ MLP: 96 → 384 → 96
+  └─ Residual connection
+          │
+          ▼
+Final LayerNorm
+          │
+          ▼
+Select [CLS] token: [B, 96]
+          │
+          ▼
+Linear classifier: [B, 10]
 ```
 
 ---
 
 ## Dataset
 
-The notebook uses the **MNIST handwritten digit dataset**, which contains ten classes:
+The notebook uses MNIST, which contains ten classes:
 
 ```text
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 ```
 
-The original MNIST images have shape:
-
-```text
-1 × 28 × 28
-```
-
-The notebook resizes each image to:
-
-```text
-1 × 32 × 32
-```
-
-This allows the image dimensions to be divided evenly by the selected patch size.
+The original `1 × 28 × 28` grayscale images are resized to `1 × 32 × 32` so that the spatial dimensions are divisible by the patch size.
 
 ---
 
@@ -110,403 +81,337 @@ This allows the image dimensions to be divided evenly by the selected patch size
 
 | Parameter | Value |
 |---|---:|
-| Input image size | 32 × 32 |
+| Image size | 32 × 32 |
 | Input channels | 1 |
 | Patch size | 8 × 8 |
 | Number of patches | 16 |
 | Sequence length | 17 |
 | Embedding dimension | 96 |
 | Attention heads | 4 |
+| Dimension per head | 24 |
 | Transformer layers | 4 |
-| MLP expansion ratio | 4 |
+| MLP hidden dimension | 384 |
 | Dropout | 0.1 |
 | Number of classes | 10 |
 | Batch size | 128 |
 | Epochs | 5 |
 | Learning rate | 3e-4 |
 | Optimizer | Adam |
-| Loss function | CrossEntropyLoss |
+| Loss | CrossEntropyLoss |
 
 ---
 
-# Mathematical Formulation and Code Mapping
+# ViT Paper Equations Mapped to Code
 
-The following equations are from the original Vision Transformer paper and are mapped directly to the corresponding notebook sections.
+GitHub renders the equations below using fenced `math` blocks. This is more reliable in README files than `\[ ... \]` or numbered `\tag{}` expressions.
 
-## 1. Patch Embedding, Class Token, and Positional Encoding
+## Equation 1: Transformer Input
 
-The Transformer input is defined as:
-
-$$
+```math
 \mathbf{z}_0 =
 \left[
-\mathbf{x}_{\text{class}};
+\mathbf{x}_{\mathrm{class}};
 \mathbf{x}_p^1\mathbf{E};
 \mathbf{x}_p^2\mathbf{E};
 \cdots;
 \mathbf{x}_p^N\mathbf{E}
 \right]
 +
-\mathbf{E}_{\text{pos}}
-\tag{1}
-$$
+\mathbf{E}_{\mathrm{pos}}
+```
 
-where:
+```math
+\mathbf{E}\in\mathbb{R}^{(P^2C)\times D},
+\qquad
+\mathbf{E}_{\mathrm{pos}}\in\mathbb{R}^{(N+1)\times D}
+```
 
-$$
-\mathbf{E}\in\mathbb{R}^{(P^2C)\times D}
-$$
+This equation combines three operations:
 
-and:
+1. project every image patch into a `D`-dimensional token;
+2. prepend the learnable class token;
+3. add positional information.
 
-$$
-\mathbf{E}_{\text{pos}}\in\mathbb{R}^{(N+1)\times D}.
-$$
+### Number of patches
 
-### Symbols
+For an image of height `H`, width `W`, and square patch size `P`:
 
-- $P$: patch height and width;
-- $C$: number of image channels;
-- $P^2C$: number of values in one flattened patch;
-- $N$: total number of patches;
-- $D$: embedding dimension;
-- $\mathbf{x}_p^i$: flattened image patch $i$;
-- $\mathbf{E}$: learnable patch-projection matrix;
-- $\mathbf{x}_{\text{class}}$: learnable class token;
-- $\mathbf{E}_{\text{pos}}$: positional embedding;
-- $\mathbf{z}_0$: initial token sequence passed to the Transformer.
-
-Equation (1) corresponds to:
-
-1. patch embedding;
-2. adding the class token;
-3. adding positional information.
-
-### Number of Patches
-
-For image height $H$, width $W$, and square patch size $P$:
-
-$$
-N = \frac{H}{P}\times\frac{W}{P}.
-$$
+```math
+N = \frac{H}{P}\times\frac{W}{P}
+```
 
 For this notebook:
 
-$$
-H=W=32,\qquad P=8,
-$$
+```math
+N = \frac{32}{8}\times\frac{32}{8}=16
+```
 
-so:
+Each grayscale patch contains:
 
-$$
-N=\frac{32}{8}\times\frac{32}{8}=4\times4=16.
-$$
+```math
+P^2C = 8^2\times1=64
+```
 
-### Patch Projection
+It is projected into a 96-dimensional embedding:
 
-Each flattened patch contains:
+```math
+\mathbb{R}^{64}\rightarrow\mathbb{R}^{96}
+```
 
-$$
-P^2C
-$$
-
-values. For an $8\times8$ grayscale patch:
-
-$$
-P^2C=8^2\times1=64.
-$$
-
-The patch projection maps:
-
-$$
-\mathbb{R}^{64}\rightarrow\mathbb{R}^{96}.
-$$
-
-Therefore:
-
-$$
-\mathbf{E}\in\mathbb{R}^{64\times96}.
-$$
-
-### Mapping to the Notebook
-
-The notebook implements patch extraction and projection with:
+### Code mapping: patch embedding
 
 ```python
 self.projection = nn.Conv2d(
-    in_channels,
-    embed_dim,
-    kernel_size=patch_size,
-    stride=patch_size,
+    in_channels=1,
+    out_channels=96,
+    kernel_size=8,
+    stride=8,
 )
 ```
 
-Using `kernel_size = patch_size` and `stride = patch_size` is equivalent to extracting non-overlapping patches, flattening them, and applying the same linear projection to every patch.
+Using a convolution whose kernel size and stride equal the patch size is equivalent to:
+
+```text
+extract each patch → flatten it → apply a shared Linear layer
+```
 
 The forward pass is:
 
 ```python
-x = self.projection(x)  # [B, D, H/P, W/P]
-x = x.flatten(2)        # [B, D, N]
-x = x.transpose(1, 2)   # [B, N, D]
+x = self.projection(x)  # [B, 96, 4, 4]
+x = x.flatten(2)        # [B, 96, 16]
+x = x.transpose(1, 2)   # [B, 16, 96]
 ```
 
-This corresponds to:
+This implements the patch projection term:
 
-$$
-\mathbf{x}_p^i\mathbf{E}.
-$$
-
-### Tensor Shapes
-
-```text
-Input image:                  [B, 1, 32, 32]
-After Conv2D projection:      [B, 96, 4, 4]
-After flattening:             [B, 96, 16]
-After transposing:            [B, 16, 96]
+```math
+\mathbf{x}_p^i\mathbf{E}
 ```
 
-### Class Token
-
-The class token is prepended with:
+### Code mapping: class token
 
 ```python
 cls_tokens = self.cls_token.expand(batch_size, -1, -1)
-tokens = torch.cat([cls_tokens, patch_tokens], dim=1)
+x = torch.cat([cls_tokens, x], dim=1)
 ```
 
-The sequence changes from:
+The tensor shape changes from:
 
 ```text
-[B, 16, 96]
+[B, 16, 96] → [B, 17, 96]
 ```
 
-to:
-
-```text
-[B, 17, 96]
-```
-
-This implements:
-
-$$
-\left[
-\mathbf{x}_{\text{class}};
-\mathbf{x}_p^1\mathbf{E};
-\cdots;
-\mathbf{x}_p^N\mathbf{E}
-\right].
-$$
-
-### Positional Encoding
-
-The notebook adds positional information using:
+### Code mapping: positional information
 
 ```python
-tokens = tokens + self.positional_encoding
+x = x + self.positional_encoding
 ```
-
-This corresponds to:
-
-$$
-+\mathbf{E}_{\text{pos}}.
-$$
 
 The notebook uses fixed sinusoidal positional encoding:
 
-$$
-PE(pos,2i)=\sin\left(\frac{pos}{10000^{2i/D}}\right),
-$$
+```math
+PE(pos,2i)=\sin\left(\frac{pos}{10000^{2i/D}}\right)
+```
 
-$$
-PE(pos,2i+1)=\cos\left(\frac{pos}{10000^{2i/D}}\right).
-$$
+```math
+PE(pos,2i+1)=\cos\left(\frac{pos}{10000^{2i/D}}\right)
+```
 
-The original ViT paper uses learnable positional embeddings. The notebook uses fixed sinusoidal encoding for educational clarity. Both methods provide information about token position.
+> **Implementation note:** The original ViT paper uses learnable positional embeddings. This notebook uses fixed sinusoidal positional encoding for educational clarity. Both methods provide token-position information.
 
 ---
 
-## 2. Multi-Head Self-Attention Sub-Layer
+## Equation 2: Multi-Head Self-Attention Sub-Layer
 
-The attention sub-layer is defined as:
-
-$$
-\mathbf{z}'_{\ell}=
-\operatorname{MSA}\left(
+```math
+\mathbf{z}'_{\ell}
+=
+\operatorname{MSA}\!\left(
 \operatorname{LN}(\mathbf{z}_{\ell-1})
 \right)
 +
 \mathbf{z}_{\ell-1},
-\qquad \ell=1,\ldots,L.
-\tag{2}
-$$
+\qquad \ell=1,\ldots,L
+```
 
-where:
+This is a **pre-normalization** attention block:
 
-- $\mathbf{z}_{\ell-1}$ is the input to encoder layer $\ell$;
-- $\operatorname{LN}$ is layer normalization;
-- $\operatorname{MSA}$ is multi-head self-attention;
-- the addition is a residual connection;
-- $\mathbf{z}'_{\ell}$ is the attention sub-layer output.
+```text
+input → LayerNorm → Multi-Head Self-Attention → residual addition
+```
 
-The notebook implements Equation (2) with:
+### Code mapping
 
 ```python
 x = x + self.attention(self.norm1(x))
 ```
 
-| Paper notation | Notebook code |
+| Paper notation | Code |
 |---|---|
-| $\mathbf{z}_{\ell-1}$ | `x` |
-| $\operatorname{LN}(\mathbf{z}_{\ell-1})$ | `self.norm1(x)` |
-| $\operatorname{MSA}(\cdot)$ | `self.attention(...)` |
-| Residual connection | `x + ...` |
-| $\mathbf{z}'_{\ell}$ | updated `x` |
+| `z_(l-1)` | `x` before attention |
+| `LN(z_(l-1))` | `self.norm1(x)` |
+| `MSA(...)` | `self.attention(...)` |
+| residual addition | `x + ...` |
+| `z'_l` | updated `x` |
 
-### Query, Key, and Value
+<details>
+<summary><strong>Query, key, and value equations</strong></summary>
 
-Each token is projected into query, key, and value vectors:
+Each normalized token is projected into query, key, and value representations:
 
-$$
+```math
 \mathbf{Q}=\mathbf{X}\mathbf{W}_Q,
-$$
-
-$$
+\qquad
 \mathbf{K}=\mathbf{X}\mathbf{W}_K,
-$$
+\qquad
+\mathbf{V}=\mathbf{X}\mathbf{W}_V
+```
 
-$$
-\mathbf{V}=\mathbf{X}\mathbf{W}_V.
-$$
+The learnable matrices `W_Q`, `W_K`, and `W_V` allow the model to create different representations for matching tokens and aggregating information.
 
-### Scaled Dot-Product Attention
+</details>
 
-$$
-\operatorname{Attention}(\mathbf{Q},\mathbf{K},\mathbf{V})=
-\operatorname{Softmax}\left(
-\frac{\mathbf{Q}\mathbf{K}^{T}}{\sqrt{d_h}}
-\right)\mathbf{V}.
-$$
+<details>
+<summary><strong>Scaled dot-product attention</strong></summary>
 
-The notebook computes attention scores with:
+```math
+\operatorname{Attention}(\mathbf{Q},\mathbf{K},\mathbf{V})
+=
+\operatorname{Softmax}\!\left(
+\frac{\mathbf{Q}\mathbf{K}^{\mathsf{T}}}{\sqrt{d_h}}
+\right)\mathbf{V}
+```
+
+where `d_h` is the feature dimension of one attention head.
+
+The notebook implements the attention scores as:
 
 ```python
 attention_scores = (
     queries @ keys.transpose(-2, -1)
 ) * self.scale
-```
 
-where:
-
-```python
 self.scale = self.head_dim ** -0.5
 ```
 
-This is equivalent to dividing by $\sqrt{d_h}$.
+Multiplication by `head_dim ** -0.5` is equivalent to division by:
 
-The attention weights are:
+```math
+\sqrt{d_h}
+```
+
+The attention weights and output are then calculated with:
 
 ```python
 attention_weights = attention_scores.softmax(dim=-1)
-```
-
-and the weighted value vectors are:
-
-```python
 output = attention_weights @ values
 ```
 
-### Multi-Head Attention
+</details>
 
-For embedding dimension $D$ and $h$ heads:
+<details>
+<summary><strong>Four-head tensor shapes</strong></summary>
 
-$$
-d_h=\frac{D}{h}.
-$$
+The notebook uses:
 
-In the notebook:
+```math
+D=96,
+\qquad h=4,
+\qquad d_h=\frac{D}{h}=24
+```
 
-$$
-D=96,\qquad h=4,
-$$
+The input attention tensor has shape:
 
-therefore:
+```text
+[B, 17, 96]
+```
 
-$$
-d_h=\frac{96}{4}=24.
-$$
+After splitting into four heads, each of query, key, and value has shape:
 
-The heads are concatenated and projected:
+```text
+[B, 4, 17, 24]
+```
 
-$$
-\operatorname{MSA}(\mathbf{X})=
-\operatorname{Concat}(\operatorname{head}_1,\ldots,\operatorname{head}_h)\mathbf{W}_O.
-$$
+The four head outputs are concatenated:
+
+```math
+4\times24=96
+```
+
+so the attention output returns to:
+
+```text
+[B, 17, 96]
+```
+
+</details>
+
+### Multi-head attention equation
+
+```math
+\operatorname{MSA}(\mathbf{X})
+=
+\operatorname{Concat}
+\left(
+\operatorname{head}_1,
+\ldots,
+\operatorname{head}_h
+\right)
+\mathbf{W}_O
+```
+
+Each head can learn a different relationship among the class token and image-patch tokens.
 
 ---
 
-## 3. MLP Sub-Layer
+## Equation 3: MLP Sub-Layer
 
-The second sub-layer is:
-
-$$
-\mathbf{z}_{\ell}=
-\operatorname{MLP}\left(
+```math
+\mathbf{z}_{\ell}
+=
+\operatorname{MLP}\!\left(
 \operatorname{LN}(\mathbf{z}'_{\ell})
 \right)
 +
 \mathbf{z}'_{\ell},
-\qquad \ell=1,\ldots,L.
-\tag{3}
-$$
+\qquad \ell=1,\ldots,L
+```
 
-The notebook implements Equation (3) with:
+The second sub-layer follows this sequence:
+
+```text
+attention output → LayerNorm → two-layer MLP → residual addition
+```
+
+### Code mapping
 
 ```python
 x = x + self.mlp(self.norm2(x))
 ```
 
-| Paper notation | Notebook code |
+| Paper notation | Code |
 |---|---|
-| $\mathbf{z}'_{\ell}$ | `x` after attention |
-| $\operatorname{LN}(\mathbf{z}'_{\ell})$ | `self.norm2(x)` |
-| $\operatorname{MLP}(\cdot)$ | `self.mlp(...)` |
-| Residual connection | `x + ...` |
-| $\mathbf{z}_{\ell}$ | updated `x` |
+| `z'_l` | `x` after attention |
+| `LN(z'_l)` | `self.norm2(x)` |
+| `MLP(...)` | `self.mlp(...)` |
+| residual addition | `x + ...` |
+| `z_l` | updated `x` |
 
-### Two-Layer MLP with GELU
+### Two-layer MLP with GELU
 
-The MLP is:
-
-$$
-\operatorname{MLP}(\mathbf{x})=
-\mathbf{W}_2
-\operatorname{GELU}\left(
+```math
+\operatorname{MLP}(\mathbf{x})
+=
+\mathbf{W}_2\,
+\operatorname{GELU}\!\left(
 \mathbf{W}_1\mathbf{x}+\mathbf{b}_1
 \right)
 +
-\mathbf{b}_2.
-$$
+\mathbf{b}_2
+```
 
-The first layer expands the representation:
-
-$$
-D\rightarrow D_{\text{MLP}},
-$$
-
-and the second projects it back:
-
-$$
-D_{\text{MLP}}\rightarrow D.
-$$
-
-With an MLP ratio of 4:
-
-$$
-D_{\text{MLP}}=D\times4=96\times4=384.
-$$
-
-The notebook code is:
+The notebook implements it as:
 
 ```python
 self.mlp = nn.Sequential(
@@ -524,125 +429,110 @@ The dimensional flow is:
 96 → 384 → GELU → 96
 ```
 
-### GELU
+<details>
+<summary><strong>GELU definition</strong></summary>
 
-The Gaussian Error Linear Unit is:
+```math
+\operatorname{GELU}(x)=x\Phi(x)
+```
 
-$$
-\operatorname{GELU}(x)=x\Phi(x),
-$$
+A commonly used approximation is:
 
-where $\Phi(x)$ is the cumulative distribution function of the standard normal distribution.
-
-A common approximation is:
-
-$$
-\operatorname{GELU}(x)\approx
+```math
+\operatorname{GELU}(x)
+\approx
 \frac{x}{2}
 \left[
-1+\tanh\left(
+1+
+\tanh\!\left(
 \sqrt{\frac{2}{\pi}}
 \left(x+0.044715x^3\right)
 \right)
-\right].
-$$
+\right]
+```
+
+GELU smoothly weights the input rather than setting every negative value exactly to zero.
+
+</details>
 
 ---
 
-## 4. Final Image Representation
+## Equation 4: Final Image Representation
 
-The final image representation is:
+```math
+\mathbf{y}=\operatorname{LN}(\mathbf{z}_L^0)
+```
 
-$$
-\mathbf{y}=\operatorname{LN}(\mathbf{z}_L^0).
-\tag{4}
-$$
+After the final encoder layer, the sequence is:
 
-where:
-
-- $L$ is the number of Transformer layers;
-- $\mathbf{z}_L^0$ is the token at index 0 after the final layer;
-- index 0 is the class token;
-- $\mathbf{y}$ is the final representation of the complete image.
-
-The final sequence is:
-
-$$
+```math
 \mathbf{z}_L=
-[\mathbf{z}_L^0,\mathbf{z}_L^1,\ldots,\mathbf{z}_L^N].
-$$
+\left[
+\mathbf{z}_L^0,
+\mathbf{z}_L^1,
+\ldots,
+\mathbf{z}_L^N
+\right]
+```
 
-The notebook performs:
+The token at index `0`, written as `z_L^0`, is the class token. It is used as the global image representation.
+
+### Code mapping
 
 ```python
 x = self.encoder(x)
 x = self.final_norm(x)
-return x[:, 0]
+cls_features = x[:, 0]
 ```
 
-Because layer normalization acts independently on each token, this is equivalent to:
+Because `LayerNorm` is applied independently to each token, normalizing the complete sequence and then selecting token zero is equivalent to normalizing the class token itself.
+
+The classifier produces one logit per MNIST class:
 
 ```python
-x = self.encoder(x)
-class_token = x[:, 0]
-class_features = self.final_norm(class_token)
-return class_features
+logits = self.classifier(cls_features)  # [B, 10]
 ```
 
-### Classification Head
-
-The class-token representation is mapped to class logits:
-
-$$
-\hat{\mathbf{y}}=
-\mathbf{W}_{\text{head}}\mathbf{y}+
-\mathbf{b}_{\text{head}}.
-$$
-
-The notebook uses:
-
-```python
-return self.classifier(cls_features)
+```math
+\widehat{\mathbf{y}}
+=
+\mathbf{W}_{\mathrm{head}}\mathbf{y}
++
+\mathbf{b}_{\mathrm{head}}
 ```
-
-This maps:
-
-$$
-\mathbb{R}^{96}\rightarrow\mathbb{R}^{10}.
-$$
 
 ---
 
 ## Complete Equation-to-Code Mapping
 
-| ViT equation | Purpose | Notebook component |
+| ViT equation | Purpose | Main code |
 |---|---|---|
-| Equation (1) | Patch projection, class token, and positional encoding | `PatchEmbedding` and `TokenAndPositionEmbedding` |
-| Equation (2) | LayerNorm, multi-head self-attention, and residual connection | `x = x + self.attention(self.norm1(x))` |
-| Equation (3) | LayerNorm, MLP with GELU, and residual connection | `x = x + self.mlp(self.norm2(x))` |
-| Equation (4) | Final normalized class-token representation | `self.final_norm(x)` and `x[:, 0]` |
+| Equation 1 | Patch projection, class token, positional information | `PatchEmbedding`, `torch.cat`, positional addition |
+| Equation 2 | LayerNorm, four-head self-attention, residual connection | `x = x + self.attention(self.norm1(x))` |
+| Equation 3 | LayerNorm, two-layer GELU MLP, residual connection | `x = x + self.mlp(self.norm2(x))` |
+| Equation 4 | Final normalized class-token representation | `self.final_norm(x)` and `x[:, 0]` |
 
 ---
 
 ## Complete Tensor-Shape Flow
 
-```text
-Input images:                         [B, 1, 32, 32]
-After Conv2D patch projection:        [B, 96, 4, 4]
-After flattening:                     [B, 96, 16]
-After transposing:                    [B, 16, 96]
-After adding class token:             [B, 17, 96]
-After positional encoding:            [B, 17, 96]
-After every Transformer block:        [B, 17, 96]
-After selecting class token:          [B, 96]
-After classification head:            [B, 10]
-```
+| Stage | Shape |
+|---|---|
+| Input images | `[B, 1, 32, 32]` |
+| Conv2D patch projection | `[B, 96, 4, 4]` |
+| Flattened patch tokens | `[B, 96, 16]` |
+| Transposed patch sequence | `[B, 16, 96]` |
+| Class token added | `[B, 17, 96]` |
+| Positional encoding added | `[B, 17, 96]` |
+| Transformer output | `[B, 17, 96]` |
+| Final class-token representation | `[B, 96]` |
+| Classification logits | `[B, 10]` |
 
 ---
 
 ## Transformer Encoder Block
 
-The complete block combines Equations (2) and (3):
+The complete pre-normalization encoder block is:
 
 ```python
 def forward(self, x):
@@ -652,34 +542,20 @@ def forward(self, x):
 ```
 
 ```text
-Input tokens z_(l-1)
-        │
-        ▼
-Layer Normalization
-        │
-        ▼
-Multi-Head Self-Attention
-        │
-        ▼
-Residual Addition
-        │
-        ▼
-Intermediate tokens z'_l
-        │
-        ▼
-Layer Normalization
-        │
-        ▼
-Two-Layer MLP with GELU
-        │
-        ▼
-Residual Addition
-        │
-        ▼
-Output tokens z_l
+Input z_(l-1)
+      │
+      ▼
+LayerNorm → Multi-Head Self-Attention
+      │
+      ▼
+Residual addition → z'_l
+      │
+      ▼
+LayerNorm → MLP with GELU
+      │
+      ▼
+Residual addition → z_l
 ```
-
-The notebook uses the **pre-normalization** Transformer configuration because layer normalization is applied before attention and before the MLP.
 
 ---
 
@@ -687,102 +563,22 @@ The notebook uses the **pre-normalization** Transformer configuration because la
 
 The notebook uses cross-entropy loss:
 
-$$
-\mathcal{L}=
+```math
+\mathcal{L}
+=
 -\frac{1}{B}
 \sum_{i=1}^{B}
 \log\left(
 \frac{\exp(s_{i,y_i})}
 {\sum_{c=1}^{K}\exp(s_{i,c})}
-\right).
-$$
-
-where:
-
-- $B$ is the batch size;
-- $K$ is the number of classes;
-- $s_{i,c}$ is the logit for sample $i$ and class $c$;
-- $y_i$ is the correct class.
-
-The PyTorch implementation is:
+\right)
+```
 
 ```python
 criterion = nn.CrossEntropyLoss()
 ```
 
-The model returns raw logits with shape:
-
-```text
-[B, 10]
-```
-
-No Softmax layer is included during training because `CrossEntropyLoss` internally applies LogSoftmax.
-
----
-
-## Training Procedure
-
-For each batch:
-
-1. Load images and labels.
-2. Move them to the selected device.
-3. Clear previous gradients.
-4. Run the forward pass.
-5. Calculate cross-entropy loss.
-6. Perform backpropagation.
-7. Update model parameters.
-8. Calculate accuracy.
-
-```python
-optimizer.zero_grad(set_to_none=True)
-
-logits = model(batch_images)
-loss = criterion(logits, batch_labels)
-
-loss.backward()
-optimizer.step()
-```
-
----
-
-## Evaluation
-
-During evaluation, gradient calculation is disabled and predictions are selected using:
-
-```python
-predictions = logits.argmax(dim=1)
-```
-
-Accuracy is:
-
-$$
-\text{Accuracy}=
-\frac{\text{Number of correct predictions}}
-{\text{Total number of predictions}}.
-$$
-
----
-
-## Model Checkpoint
-
-```python
-checkpoint = {
-    "model_state_dict": model.state_dict(),
-    "config": vars(config),
-    "test_accuracy": test_accuracy,
-}
-
-torch.save(
-    checkpoint,
-    "vit_mnist_from_scratch.pt",
-)
-```
-
-The checkpoint stores:
-
-- trained model parameters;
-- model configuration;
-- final test accuracy.
+The model returns raw logits rather than probabilities because `CrossEntropyLoss` applies the required log-softmax operation internally.
 
 ---
 
@@ -795,120 +591,55 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-On Windows:
+Install the dependencies:
 
 ```bash
-venv\Scripts\activate
-```
-
-Install dependencies:
-
-```bash
-pip install torch torchvision matplotlib numpy jupyter
+pip install torch torchvision numpy matplotlib jupyter
 ```
 
 ---
 
-## Running the Notebook
-
-Start Jupyter Notebook:
+## Run the Notebook
 
 ```bash
-jupyter notebook
+jupyter notebook vision_transformer_from_scratch_mnist.ipynb
 ```
 
-Open:
-
-```text
-vision_transformer_from_scratch_mnist.ipynb
-```
-
-Alternatively:
-
-```bash
-jupyter lab
-```
-
-The notebook can also be opened in Visual Studio Code using a Python environment that contains PyTorch, TorchVision, NumPy, and Matplotlib.
+Before publishing changes, verify the notebook by using **Restart Kernel and Run All Cells**.
 
 ---
 
-## Hardware
+## Model Checkpoint
 
-The notebook automatically uses a CUDA GPU when available:
+A checkpoint can be saved with:
 
 ```python
-device = torch.device(
-    "cuda" if torch.cuda.is_available() else "cpu"
-)
+checkpoint = {
+    "model_state_dict": model.state_dict(),
+    "config": vars(config),
+    "test_accuracy": test_accuracy,
+}
+
+torch.save(checkpoint, "vit_mnist_from_scratch.pt")
 ```
 
-Otherwise, it runs on the CPU.
+Large model checkpoints should normally be excluded from Git using `.gitignore` or stored with Git LFS.
 
 ---
 
 ## Key Learning Outcomes
 
-After completing this notebook, you should understand:
+This notebook demonstrates:
 
-- how an image is divided into patches;
-- how Conv2D performs patch extraction and projection;
-- how patch embeddings become tokens;
-- why a class token is added;
-- why positional information is required;
-- how queries, keys, and values are created;
-- how scaled dot-product attention works;
-- how multi-head attention captures different patch relationships;
-- how residual connections improve optimization;
-- how pre-normalization is used;
-- how the MLP uses two linear layers and GELU;
-- how Equations (1)–(4) map to the code;
-- how the final class token represents the whole image;
-- how ViT is trained for image classification.
-
----
-
-## Implementation Notes
-
-### Conv2D Versus Explicit Patch Extraction
-
-These operations are mathematically equivalent when the Conv2D kernel and stride equal the patch size:
-
-```text
-Extract patches → Flatten patches → Shared Linear projection
-```
-
-and:
-
-```text
-Conv2D(kernel_size=patch_size, stride=patch_size)
-```
-
-### Positional-Encoding Difference
-
-The original ViT architecture uses learnable positional embeddings. The notebook uses fixed sinusoidal positional encoding.
-
-A learnable alternative is:
-
-```python
-self.positional_embedding = nn.Parameter(
-    torch.zeros(
-        1,
-        num_patches + 1,
-        embed_dim,
-    )
-)
-```
-
-and:
-
-```python
-tokens = tokens + self.positional_embedding
-```
-
-### Educational Scale
-
-The original ViT models were trained on much larger datasets and images. This notebook uses a compact architecture so it can be understood and trained on modest hardware.
+- how images are converted into sequences of patch tokens;
+- why Conv2D can implement patch extraction and linear projection;
+- how class and positional tokens are incorporated;
+- how queries, keys, and values are used in attention;
+- how four attention heads divide a 96-dimensional embedding;
+- how residual connections and pre-normalization are implemented;
+- how the two-layer GELU MLP processes every token;
+- how the final class token is used for image classification;
+- how the principal ViT equations map directly to PyTorch code.
 
 ---
 
@@ -917,12 +648,11 @@ The original ViT models were trained on much larger datasets and images. This no
 1. Alexey Dosovitskiy et al. *An Image is Worth 16×16 Words: Transformers for Image Recognition at Scale.* ICLR, 2021.
 2. Ashish Vaswani et al. *Attention Is All You Need.* NeurIPS, 2017.
 3. Dan Hendrycks and Kevin Gimpel. *Gaussian Error Linear Units (GELUs).* 2016.
-4. PyTorch Documentation.
-5. TorchVision MNIST Documentation.
-6. Matt Nguyen. *Building a Vision Transformer Model From Scratch.* Medium.
+4. PyTorch documentation.
+5. TorchVision MNIST documentation.
 
 ---
 
 ## License
 
-This implementation is intended for educational and research purposes. Add the license appropriate for your repository, such as MIT or Apache 2.0.
+This implementation is intended for educational and research use. Add the license appropriate for your repository, such as MIT or Apache 2.0.
