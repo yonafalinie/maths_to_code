@@ -375,30 +375,7 @@ print("Checkpoint saved to:", checkpoint_path)
 
 After saving, download the checkpoint from the Kaggle output directory or create a saved notebook version with outputs included.
 
-## Evaluating Additional OOD Datasets
 
-The trained model can be reused for other OOD datasets.
-
-No additional training is required.
-
-The general process is:
-
-```python
-ood_scores = collect_ood_scores(
-    model,
-    ood_loader,
-    max_examples=2000,
-)
-
-results = evaluate_ood_scores(
-    id_scores,
-    ood_scores,
-)
-```
-
-Only the dataset and data loader need to be changed.
-
-For datasets such as Places365, LSUN-C, LSUN-Resize, and iSUN, the images are normally loaded using `torchvision.datasets.ImageFolder`.
 
 ## Important Notes
 
@@ -420,7 +397,7 @@ It does not reproduce every experiment, architecture, dataset, or hyperparameter
 
 This notebook is based on the method introduced in:
 
-**Virtual Outlier Synthesis for Out-of-Distribution Detection**
+[**Virtual Outlier Synthesis for Out-of-Distribution Detection**](https://github.com/deeplearning-wisc/vos/tree/main/classification)
 
 The implementation is inspired by the official VOS repository:
 
@@ -428,6 +405,88 @@ The implementation is inspired by the official VOS repository:
 deeplearning-wisc/vos
 ```
 
-## Disclaimer
+## Why MSP Can Perform Better Than Energy
 
-This notebook is an independent educational reproduction. It is not an official implementation and may contain small adaptations for compatibility with Kaggle and modern PyTorch versions.
+In this experiment, the MSP score achieved a higher AUROC than the Energy score.
+
+For example:
+
+```text
+MSP AUROC:    0.9164
+Energy AUROC: 0.8714
+```
+
+This does **not** mean that the experiment failed.
+
+MSP and Energy are two different post-hoc OOD scoring functions applied to the same classifier outputs. Their performance can vary depending on:
+
+- the trained model,
+- the OOD dataset,
+- the learned logit distribution,
+- the number of evaluated OOD samples,
+- random initialization and data ordering,
+- differences between the reproduction and the original training environment.
+
+### MSP Score
+
+The MSP-based OOD score is calculated as:
+
+```text
+MSP OOD score = 1 - maximum softmax probability
+```
+
+A sample receives a high OOD score when the classifier has low confidence in every class.
+
+In this experiment, the maximum softmax probability separates CIFAR-10 and SVHN relatively well. Therefore, MSP produces a higher AUROC.
+
+### Energy Score
+
+The Energy score is calculated as:
+
+```text
+Energy = -logsumexp(logits)
+```
+
+Unlike MSP, Energy depends on the absolute magnitude of all logits, not only the largest softmax probability.
+
+Energy can perform worse when the model assigns logits with similar overall magnitudes to both ID and OOD images. In that situation, the Energy distributions overlap more even when the softmax confidence remains useful for separation.
+
+### Why This Is Still a Valid Result
+
+The purpose of the experiment is not to guarantee that Energy always outperforms MSP. The experiment demonstrates that:
+
+- the VOS model can be trained successfully,
+- virtual outliers are generated from low-density feature regions,
+- the auxiliary VOS loss receives gradients,
+- the trained classifier can be evaluated on real OOD data,
+- both MSP and Energy produce meaningful OOD rankings.
+
+An AUROC above `0.5` means that the score performs better than random ranking. Both scores therefore show useful OOD detection capability in this experiment.
+
+The stronger MSP result simply indicates that MSP is the better scoring function for this particular trained checkpoint and CIFAR-10 versus SVHN evaluation.
+
+### Reproduction Differences
+
+The notebook is an educational reproduction rather than a bit-for-bit execution of the original repository.
+
+Small differences may come from:
+
+- modern PyTorch and TorchVision versions,
+- Kaggle GPU hardware,
+- random seeds,
+- data-loader ordering,
+- optimizer or scheduler implementation details,
+- evaluating a random subset of 2,000 SVHN images,
+- numerical differences in Gaussian estimation and virtual-outlier sampling.
+
+Therefore, the relative ordering of MSP and Energy does not need to exactly match the original paper for the implementation to be considered successful.
+
+### Conclusion
+
+The experiment did not fail because MSP achieved a higher score than Energy.
+
+The correct interpretation is:
+
+> For this trained model and OOD dataset, MSP provides better separation between CIFAR-10 and SVHN than the standard unweighted Energy score.
+
+A complete comparison should report both methods rather than assuming that one method must always be superior.
