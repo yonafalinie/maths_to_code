@@ -21,7 +21,7 @@ The notebooks move step by step from mathematical notation to tensors, matrix op
 | [NPOS](./npos/) | Non-Parametric Outlier Synthesis for OOD detection | Mathematical and conceptual notes |
 
 
-
+> **Notebook viewing:** For long `.ipynb` files, **nbviewer is recommended** for a cleaner and more reliable viewing experience.
 
 
 
