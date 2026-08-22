@@ -391,15 +391,14 @@ and
 
 ### NPOS
 
+
 $$
-v
-=
-z_{\text{boundary}}
-+
-\epsilon,
+v = z_{\text{boundary}} + \epsilon,
 \qquad
-\epsilon\sim\mathcal N(0,\sigma^2I).
+\epsilon \sim \mathcal{N}(0,\sigma^2 I)
 $$
+
+
 
 Local random perturbation.
 
