@@ -119,16 +119,12 @@ This is really the central problem of the whole paper.
 The training set contains only
 
 $$
-D_{\text{in}}
-=
-\{(x_i,y_i)\}_{i=1}^n.
+D_{\text{in}} = \{(x_i, y_i)\}_{i=1}^{n}
 $$
 
-There is no
+There is no $D_{\text{out}}$.
 
-$$
-D_{\text{out}}.
-$$
+
 
 One option would be to obtain some external dataset and call it OOD.
 
