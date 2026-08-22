@@ -34,3 +34,4 @@ The notebooks move step by step from mathematical notation to tensors, matrix op
 - Portfolio: https://yonafalinie.github.io/
 - GitHub: https://github.com/yonafalinie
 - LinkedIn: https://www.linkedin.com/in/yona-falinie-abd-gaus-46906792/
+- Email: yonafalinie@gmail.com 
