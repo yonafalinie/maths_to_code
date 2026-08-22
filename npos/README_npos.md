@@ -12,7 +12,7 @@ The introduction is doing three things:
 
 ### Paragraph 1: Why OOD detection matters
 
-The paper starts with the standard open-world problem: a classifier is trained on a known distribution \(P_{\text{in}}\), but once deployed it can encounter samples from unknown classes. A conventional classifier has no explicit mechanism saying “I have never seen anything like this,” so it may still assign one of the known labels with high confidence.
+The paper starts with the standard open-world problem: a classifier is trained on a known distribution $P_{\text{in}}$, but once deployed it can encounter samples from unknown classes. A conventional classifier has no explicit mechanism saying “I have never seen anything like this,” so it may still assign one of the known labels with high confidence.
 
 For example, suppose training contains
 
@@ -73,11 +73,10 @@ Conceptually:
 
 $$
 \boxed{
-\text{Training objective}
-=
-\text{classification objective}
-+
-\text{uncertainty objective}
+\begin{aligned}
+\text{Training objective} &= \text{classification objective} \\
+&\quad + \text{uncertainty objective}
+\end{aligned}
 }
 $$
 
@@ -89,7 +88,7 @@ R_{\text{closed}}
 \alpha R_{\text{open}}.
 $$
 
-The introduction already describes \(R_{\text{open}}\) conceptually as a form of **level-set estimation** that separates ID from OOD.
+The introduction already describes $R_{\text{open}}$ conceptually as a form of **level-set estimation** that separates ID from OOD.
 
 We'll discuss level sets properly in Section 2/3, but intuitively think of it as drawing a contour around the dense region occupied by ID data:
 
@@ -301,7 +300,7 @@ Consider two points.
         ● ●
 ```
 
-The \(k\)-th nearest neighbour is fairly close.
+The $k$-th nearest neighbour is fairly close.
 
 Therefore:
 
@@ -352,7 +351,7 @@ d_k \uparrow
 P_{\text{in}}(z)\downarrow.
 $$
 
-It isn't literally computing the probability density \(P_{\text{in}}\); it is using neighbour geometry as a surrogate.
+It isn't literally computing the probability density $P_{\text{in}}$ ; it is using neighbour geometry as a surrogate.
 
 That is the **non-parametric** part.
 
@@ -360,7 +359,7 @@ That is the **non-parametric** part.
 
 # Then comes Gaussian sampling
 
-Once they find a boundary feature \(h(x_i)\), they generate candidates:
+Once they find a boundary feature $h(x_i)$, they generate candidates:
 
 $$
 v
