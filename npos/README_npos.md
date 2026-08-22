@@ -568,7 +568,7 @@ $$
 versus
 
 $$
-\boxed{\text{NPOS FPR95}=5.76\%}.
+\text{NPOS FPR95}=5.76\%.
 $$
 
 They also report that NPOS improves over VOS by **13.40 percentage points in FPR95**, which they use as evidence that non-parametric synthesis itself matters.
