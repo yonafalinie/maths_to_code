@@ -74,11 +74,7 @@ $$
 Later these become:
 
 $$
-R_{\text{closed}}
-
-+
-
-\alpha R_{\text{open}}.
+R_{\text{closed}}+\alpha R_{\text{open}}.
 $$
 
 The introduction already describes $R_{\text{open}}$ conceptually as a form of **level-set estimation** that separates ID from OOD.
