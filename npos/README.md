@@ -359,11 +359,7 @@ $$
 as an inverse density indicator:
 
 $$
-d_k \uparrow
-
-\Rightarrow
-
-P_{\text{in}}(z)\downarrow.
+d_k \uparrow \Rightarrow P_{\text{in}}(z)\downarrow.
 $$
 
 It isn't literally computing the probability density $P_{\text{in}}$ ; it is using neighbour geometry as a surrogate.
