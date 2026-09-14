@@ -68,17 +68,7 @@ In other words, rather than training an ordinary classifier and adding an OOD sc
 Conceptually:
 
 $$
-\boxed{
-
-\begin{aligned}
-
-\text{Training objective} &= \text{classification objective} \\\\
-
-&\quad + \text{uncertainty objective}
-
-\end{aligned}
-
-}
+\boxed{\begin{aligned}\text{Training objective} &= \text{classification objective} \\\\ &\quad + \text{uncertainty objective}\end{aligned}}
 $$
 
 Later these become:
