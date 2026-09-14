@@ -221,11 +221,7 @@ The authors propose **Non-Parametric Outlier Synthesis**.
 The key claim is:
 
 $$
-\boxed{
-
-\text{Don't assume a global probability distribution for ID embeddings.}
-
-}
+\boxed{\text{Don't assume a global probability distribution for ID embeddings.}}
 $$
 
 Instead, use the actual geometry of observed embeddings.
