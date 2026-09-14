@@ -157,11 +157,7 @@ VOS models the distribution of these features.
 Very roughly, VOS assumes:
 
 $$
-h(x)\mid y=c
-
-\sim
-
-\mathcal N(\mu_c,\Sigma).
+h(x)\mid y=c\sim\mathcal N(\mu_c,\Sigma).
 $$
 
 Then it generates samples from low-density regions of that Gaussian model.
