@@ -371,11 +371,7 @@ That is the **non-parametric** part.
 Once they find a boundary feature $h(x_i)$, they generate candidates:
 
 $$
-v
-
-\sim
-
-\mathcal N(h(x_i),\sigma^2I).
+v \sim \mathcal N(h(x_i),\sigma^2I).
 $$
 
 This can seem contradictory at first:
