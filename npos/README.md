@@ -390,11 +390,7 @@ There's a major difference between:
 
 ### VOS
 $$
-P_{\text{in}}(z)
-
-\approx
-
-\mathcal N(\mu,\Sigma)
+P_{\text{in}}(z) \approx \mathcal N(\mu,\Sigma)
 $$
 
 Global distribution assumption.
@@ -403,11 +399,7 @@ and
 
 ### NPOS
 $$
-v = z_{\text{boundary}} + \epsilon,
-
-\qquad
-
-\epsilon \sim \mathcal{N}(0,\sigma^2 I)
+v = z_{\text{boundary}} + \epsilon, \qquad \epsilon \sim \mathcal{N}(0,\sigma^2 I)
 $$
 
 
