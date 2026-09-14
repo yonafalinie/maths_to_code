@@ -621,23 +621,7 @@ The introduction finishes with essentially three claims.
 Before moving on, the mental model I want you to have is:
 
 $$
-\boxed{
-
-\text{Real ID embeddings}
-
-\xrightarrow{\text{kNN}}
-
-\text{boundary ID points}
-
-\xrightarrow{\text{Gaussian perturb}}
-
-\text{candidate outliers}
-
-\xrightarrow{\text{kNN filter}}
-
-\text{virtual OOD}
-
-}
+\boxed{\text{Real ID embeddings}\xrightarrow{\text{kNN}}\text{boundary ID points}\xrightarrow{\text{Gaussian perturb}}\text{candidate outliers}\xrightarrow{\text{kNN filter}}\text{virtual OOD}}
 $$
 
 and then
