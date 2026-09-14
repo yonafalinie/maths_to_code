@@ -472,21 +472,13 @@ The authors want samples belonging to each class to cluster around their class p
 So one loss effectively says:
 
 $$
-\boxed{
-
-\text{make ID classes compact and distinguishable}
-
-}
+\boxed{\text{make ID classes compact and distinguishable}}
 $$
 
 while another says:
 
 $$
-\boxed{
-
-\text{separate ID features from synthetic OOD features}
-
-}
+\boxed{\text{separate ID features from synthetic OOD features}}
 $$
 
 These become:
