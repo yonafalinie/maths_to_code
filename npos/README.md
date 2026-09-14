@@ -627,15 +627,7 @@ $$
 and then
 
 $$
-\boxed{
-
-R_{\text{closed}}
-
-+
-
-\alpha R_{\text{open}}
-
-}
+\boxed{R_{\text{closed}}+\alpha R_{\text{open}}}
 $$
 
 trains the network.
