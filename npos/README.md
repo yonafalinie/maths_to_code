@@ -16,9 +16,7 @@ The paper starts with the standard open-world problem: a classifier is trained o
 For example, suppose training contains
 
 $$
-Y_{\text{in}} =
-
-\{\text{cat},\text{dog},\text{car}\}.
+Y_{\text{in}} = \{\text{cat},\text{dog},\text{car}\}.
 $$
 
 At test time you provide an airplane.
